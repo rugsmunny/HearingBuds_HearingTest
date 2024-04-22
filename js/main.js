@@ -450,7 +450,7 @@ const SLIDE_3 = `
           </div>
         </section>
         <div class="hand-rub">
-        <img src="../../resources/images/icons/rub-hands.svg" />
+        <img src="./resources/images/icons/rub-hands.svg" />
         </div>
       </div>
     </div>

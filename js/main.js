@@ -128,7 +128,7 @@ function getSoundTestSlide() {
     })
   );
 
-  setRestartTestListener();
+  //setRestartTestListener();
 }
 
 function getResultSlide() {
@@ -324,7 +324,7 @@ function displayModal(text) {
 
 // RESTART TEST
 
-function setRestartTestListener() {
+/*function setRestartTestListener() {
   displayModal(abortTestWarningText);
   $(".restart-test").addEventListener("click", () => {
     $("#restart-dialog")
@@ -340,7 +340,7 @@ function setRestartTestListener() {
         })
       );
   });
-}
+}*/
 
 function resetUserData() {
   USER_DATA.yearOfBirth = "";

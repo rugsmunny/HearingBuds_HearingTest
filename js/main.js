@@ -119,12 +119,13 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
   await getSoundTestSlideHTML(hearingTestType, earText, datadirection);
 
   $all(".soundtrack-button").forEach((button) =>
-    button.addEventListener("click", (event) => {
+    button.addEventListener("click", async (event) => {
       event.preventDefault();
       if (!audio.paused) {
         audio.pause();
       }
       if (button.classList.contains("test-finished")) {
+        currentSound = sounds[0];
         resultIndex++;
         navigate(event);
       } else {
@@ -239,7 +240,7 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
     displayModal();
   });
 
-  initiateAndRunPlayback(decibelBValues.indexOf(45)); // start playback at 45dB as soon as page has finish loading
+  initiateAndRunPlayback(4); // start playback at 45dB as soon as page has finish loading
 }
 
 async function setResultSlide() {
@@ -378,6 +379,7 @@ function changeSlide(slideToGet) {
 
 // PLAYBACK
 
+
 const sounds = ["1kHz", "500Hz", "2kHz", "4kHz", "8kHz"]; // order of sounds
 const decibelBValues = [0, 15, 25, 35, 45, 55]; // order of decibels
 let currentSound = sounds[0]; // start value
@@ -430,7 +432,7 @@ function updateTrackbar(trackbarValue) {
 
 let resultIndex = 0;
 
-function changeSoundTrack(button) {
+function changeSoundTrack(button) { 
   const currentSoundDisplay = $("#sound-test-iteration");
   const directionChange = +button.getAttribute("value");
   const currentSoundNumber =

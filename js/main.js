@@ -167,59 +167,55 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
     })
   );
 
-  // function detectMobile() {
-  //   var result = navigator.userAgent.match(
-  //     /(iphone)|(ipod)|(ipad)|(android)|(blackberry)|(windows phone)|(symbian)/i
-  //   );
+  function detectMobile() {
+    var result = navigator.userAgent.match(
+      /(iphone)|(ipod)|(ipad)|(android)|(blackberry)|(windows phone)|(symbian)/i
+    );
 
-  //   if (result !== null) {
-  //     return "mobile";
-  //   } else {
-  //     return "desktop";
-  //   }
-  // }
-  // const trackMarkers = $all(".trackbar-marker");
-  // trackMarkers.forEach((trackMarker) => {
-  //   trackMarker.addEventListener("mousedown", () => {
-  //     const trackBar = trackMarker.parentElement;
-  //     const trackRect = trackBar.getBoundingClientRect();
-  //     const trackWidth = trackRect.width;
+    if (result !== null) {
+      return "mobile";
+    } else {
+      return "desktop";
+    }
+  }
+  const trackMarkers = $all(".trackbar-marker");
+  trackMarkers.forEach((trackMarker) => {
+    trackMarker.addEventListener("mousedown", () => {
+      const trackBar = trackMarker.parentElement;
+      const trackRect = trackBar.getBoundingClientRect();
+      const trackWidth = trackRect.width;
 
-  //     const mouseMoveHandler = (event) => {
-  //       event.preventDefault();
-  //       let mouseX;
-  //       if (detectMobile() == "desktop") {
-  //         mouseX = event.pageX; 
-  //       } else {
-  //         mouseX = event.touches[0].pageX; 
-  //       }
-  //       const newPosition = Math.min(
-  //         Math.max(mouseX - trackRect.left, 0),
-  //         trackWidth
-  //       );
-  //       if (newPosition >= 0 && newPosition <= trackWidth) {
-  //         trackMarker.style.left = `${newPosition}px`;
-  //         trackBar.style.backgroundImage = `linear-gradient(to right, #008545 ${newPosition}px, #333F48 ${newPosition}px)`;
-  //       }
-  //     };
+      const mouseMoveHandler = (event) => {
+        event.preventDefault();
+        let mouseX;
+        if (detectMobile() == "desktop") {
+          mouseX = event.pageX;
+        } else {
+          mouseX = event.touches[0].pageX;
+        }
+        const newPosition = Math.min(
+          Math.max(mouseX - trackRect.left, -10),
+          trackWidth
+        );
+        if (newPosition >= 0 && newPosition <= trackWidth) {
+          trackMarker.style.left = `${newPosition - (trackMarker.getBoundingClientRect().width/2)}px`;
+          trackBar.style.backgroundImage = `linear-gradient(to right, #008545 ${newPosition}px, #333F48 ${newPosition}px)`;
+        }
+      };
 
-  //     const mouseUpHandler = () => {
-  //       const finalPosition = parseInt(trackMarker.style.left);
-  //       if (finalPosition < 0 || finalPosition > trackWidth) {
-  //         return;
-  //       }
-  //       updateTrackbar(finalPosition);
-  //       initiateAndRunPlayback(finalPosition);
+      const mouseUpHandler = () => {
+        const position = Math.round((trackMarker.getBoundingClientRect().left - trackRect.left) / (trackWidth / 5));
+        updateTrackbar(position);
+        initiateAndRunPlayback(position);
 
-  //       document.removeEventListener("mousemove", mouseMoveHandler);
-  //       document.removeEventListener("mouseup", mouseUpHandler);
-  //       console.log(trackMarker.style.left);
-  //     };
+        document.removeEventListener("mousemove", mouseMoveHandler);
+        document.removeEventListener("mouseup", mouseUpHandler);
+      };
 
-  //     document.addEventListener("mousemove", mouseMoveHandler);
-  //     document.addEventListener("mouseup", mouseUpHandler);
-  //   });
-  // });
+      document.addEventListener("mousemove", mouseMoveHandler);
+      document.addEventListener("mouseup", mouseUpHandler);
+    });
+  });
 
   function initiateAndRunPlayback(decibelValue) {
     decibel = decibelBValues[decibelValue];

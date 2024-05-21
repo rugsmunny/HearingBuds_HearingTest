@@ -20,9 +20,26 @@ function getFormSlide() {
   populateYearOfBirthDropdown(birthYearDropdownList);
   birthYearDropdown.addEventListener("click", (event) => {
     event.stopPropagation();
-    $("#birth-year").classList.toggle("on-hover");
+    birthYearDropdown.classList.toggle("on-hover");
   });
 
+  
+
+  const addOnHover = (event) => {
+    event.stopPropagation();
+    birthYearDropdown.classList.add("on-hover");
+    birthYearDropdown.removeEventListener("mouseenter", addOnHover);
+    birthYearDropdown.addEventListener("mouseleave", removeOnHover);
+  };
+
+  const removeOnHover = (event) => {
+    event.stopPropagation();
+    birthYearDropdown.classList.remove("on-hover");
+    birthYearDropdown.removeEventListener("mouseleave", removeOnHover);
+    birthYearDropdown.addEventListener("mouseenter", addOnHover);
+  };
+  birthYearDropdown.addEventListener("mouseenter", addOnHover);
+  
   const gender = $all(".input-radio");
   gender.forEach((radioButton) =>
     radioButton.addEventListener("click", (event) => {
@@ -198,13 +215,18 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
           trackWidth
         );
         if (newPosition >= 0 && newPosition <= trackWidth) {
-          trackMarker.style.left = `${newPosition - (trackMarker.getBoundingClientRect().width/2)}px`;
+          trackMarker.style.left = `${
+            newPosition - trackMarker.getBoundingClientRect().width / 2
+          }px`;
           trackBar.style.backgroundImage = `linear-gradient(to right, #008545 ${newPosition}px, #333F48 ${newPosition}px)`;
         }
       };
 
       const mouseUpHandler = () => {
-        const position = Math.round((trackMarker.getBoundingClientRect().left - trackRect.left) / (trackWidth / 5));
+        const position = Math.round(
+          (trackMarker.getBoundingClientRect().left - trackRect.left) /
+            (trackWidth / 5)
+        );
         updateTrackbar(position);
         initiateAndRunPlayback(position);
 
@@ -315,6 +337,7 @@ function populateYearOfBirthDropdown(yearOfBirth) {
     birthYear.textContent = year;
     birthYear.addEventListener("click", () => {
       $("#year-selected").textContent = birthYear.textContent;
+      $("#birth-year").classList.remove("on-hover");
       validateForm();
     });
     yearOfBirth.appendChild(birthYear);
@@ -375,7 +398,6 @@ function changeSlide(slideToGet) {
 
 // PLAYBACK
 
-
 const sounds = ["1kHz", "500Hz", "2kHz", "4kHz", "8kHz"]; // order of sounds
 const decibelBValues = [0, 15, 25, 35, 45, 55]; // order of decibels
 let currentSound = sounds[0]; // start value
@@ -428,7 +450,7 @@ function updateTrackbar(trackbarValue) {
 
 let resultIndex = 0;
 
-function changeSoundTrack(button) { 
+function changeSoundTrack(button) {
   const currentSoundDisplay = $("#sound-test-iteration");
   const directionChange = +button.getAttribute("value");
   const currentSoundNumber =
@@ -442,14 +464,13 @@ function changeSoundTrack(button) {
   resultIndex += directionChange;
   currentSoundDisplay.textContent = currentSoundNumber;
   const nextSoundBtn = $("#next-sound");
-  if(currentSoundNumber == 5) {
+  if (currentSoundNumber == 5) {
     nextSoundBtn.querySelector("p").textContent = "Finish test";
     nextSoundBtn.classList.add("test-finished");
   } else {
     nextSoundBtn.querySelector("p").textContent = "Next sound";
     nextSoundBtn.classList.remove("test-finished");
   }
-  
 
   $("#previous-sound").style.visibility =
     currentSoundDisplay.textContent > 1 ? "visible" : "hidden";
@@ -515,7 +536,8 @@ const initialTestTextWithoutHeadphones = "There are 5 sliders";
 const hearingbudsMayHelpTitle = "The HearingBuds may help";
 const hearingbudsMayHelpText =
   "Your test results show that you have mild to moderate hearing loss in both ears across different frequencies.";
-const hearingbudsMayNotHelpTitle = "Your hearing sensitivity is within normal range across all frequencies tested.";
+const hearingbudsMayNotHelpTitle =
+  "Your hearing sensitivity is within normal range across all frequencies tested.";
 const hearingbudsMayNotHelpText =
   "Based on your online hearing test results, we recommend our HearingBuds for its excellent sound performance during calls and listening to music.";
 const alarmingResultsTitle =

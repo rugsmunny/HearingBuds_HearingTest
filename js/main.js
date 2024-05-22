@@ -14,32 +14,28 @@ function getFormSlide() {
   hearingTestContainer.innerHTML = SLIDE_2;
 
   const birthYear = $("#birth-year");
-  const birthYearDropdown = birthYear.querySelector(".dropdown-wrapper");
+  const dropdownWrapper = birthYear.querySelector(".dropdown-wrapper");
+  const birthYearDropdown = birthYear.querySelector(".year-dropdown");
   const birthYearDropdownList = birthYear.querySelector(".dropdown-content");
 
-  populateYearOfBirthDropdown(birthYearDropdownList);
-  birthYearDropdown.addEventListener("click", (event) => {
-    event.stopPropagation();
-    birthYearDropdown.classList.toggle("on-hover");
-  });
-
-  
-
-  const addOnHover = (event) => {
-    event.stopPropagation();
-    birthYearDropdown.classList.add("on-hover");
+  const addOnHover = () => {
+    dropdownWrapper.classList.add("on-hover");
+    birthYear.querySelector(".drop-arrow").style.transform = "rotate(180deg)";
     birthYearDropdown.removeEventListener("mouseenter", addOnHover);
-    birthYearDropdown.addEventListener("mouseleave", removeOnHover);
+    dropdownWrapper.addEventListener("mouseleave", removeOnHover);
   };
 
-  const removeOnHover = (event) => {
-    event.stopPropagation();
-    birthYearDropdown.classList.remove("on-hover");
-    birthYearDropdown.removeEventListener("mouseleave", removeOnHover);
+  const removeOnHover = () => {
+    dropdownWrapper.classList.remove("on-hover");
+    birthYear.querySelector(".drop-arrow").style.transform = "rotate(0deg)";
+    dropdownWrapper.removeEventListener("mouseleave", removeOnHover);
     birthYearDropdown.addEventListener("mouseenter", addOnHover);
   };
+
+  populateYearOfBirthDropdown(birthYearDropdownList, removeOnHover);
+
   birthYearDropdown.addEventListener("mouseenter", addOnHover);
-  
+
   const gender = $all(".input-radio");
   gender.forEach((radioButton) =>
     radioButton.addEventListener("click", (event) => {
@@ -184,34 +180,29 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
     })
   );
 
-  function detectMobile() {
-    var result = navigator.userAgent.match(
-      /(iphone)|(ipod)|(ipad)|(android)|(blackberry)|(windows phone)|(symbian)/i
-    );
+  const trackMarkers = document.querySelectorAll(".trackbar-marker");
 
-    if (result !== null) {
-      return "mobile";
-    } else {
-      return "desktop";
-    }
-  }
-  const trackMarkers = $all(".trackbar-marker");
   trackMarkers.forEach((trackMarker) => {
-    trackMarker.addEventListener("mousedown", () => {
+    trackMarker.addEventListener(detectMobile() ? "touchstart" : "mousedown", (event) => {
+      if(!detectMobile())event.preventDefault();
       const trackBar = trackMarker.parentElement;
       const trackRect = trackBar.getBoundingClientRect();
       const trackWidth = trackRect.width;
-
+  
       const mouseMoveHandler = (event) => {
-        event.preventDefault();
-        let mouseX;
-        if (detectMobile() == "desktop") {
-          mouseX = event.pageX;
+        let xPosition;
+        if (detectMobile()) {
+          if (event.touches && event.touches.length > 0) {
+            xPosition = event.touches[0].pageX;
+          } else {
+            return;
+          }
         } else {
-          mouseX = event.touches[0].pageX;
+          xPosition = event.pageX;
         }
+  
         const newPosition = Math.min(
-          Math.max(mouseX - trackRect.left, -10),
+          Math.max(xPosition - trackRect.left, -10),
           trackWidth
         );
         if (newPosition >= 0 && newPosition <= trackWidth) {
@@ -221,7 +212,7 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
           trackBar.style.backgroundImage = `linear-gradient(to right, #008545 ${newPosition}px, #333F48 ${newPosition}px)`;
         }
       };
-
+  
       const mouseUpHandler = () => {
         const position = Math.round(
           (trackMarker.getBoundingClientRect().left - trackRect.left) /
@@ -229,15 +220,18 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
         );
         updateTrackbar(position);
         initiateAndRunPlayback(position);
-
+  
         document.removeEventListener("mousemove", mouseMoveHandler);
         document.removeEventListener("mouseup", mouseUpHandler);
+        document.removeEventListener("touchmove", mouseMoveHandler);
+        document.removeEventListener("touchend", mouseUpHandler);
       };
-
-      document.addEventListener("mousemove", mouseMoveHandler);
-      document.addEventListener("mouseup", mouseUpHandler);
+  
+      document.addEventListener(detectMobile() ? "touchmove" : "mousemove", mouseMoveHandler);
+      document.addEventListener(detectMobile() ? "touchend" : "mouseup", mouseUpHandler);
     });
   });
+  
 
   function initiateAndRunPlayback(decibelValue) {
     decibel = decibelBValues[decibelValue];
@@ -249,7 +243,7 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
       volumeButtons.forEach(
         (button) => (button.querySelector("path").style.fill = "#008545")
       );
-    });
+    }).catch((error) => {console.log(error.message)});
   }
 
   $("#restart").addEventListener("click", (event) => {
@@ -328,7 +322,7 @@ function validateForm() {
   }
 }
 
-function populateYearOfBirthDropdown(yearOfBirth) {
+function populateYearOfBirthDropdown(yearOfBirth, removeOnHover) {
   const currentYear = new Date().getFullYear();
   for (var year = currentYear; year >= currentYear - 120; year--) {
     const birthYear = document.createElement("p");
@@ -337,7 +331,7 @@ function populateYearOfBirthDropdown(yearOfBirth) {
     birthYear.textContent = year;
     birthYear.addEventListener("click", () => {
       $("#year-selected").textContent = birthYear.textContent;
-      $("#birth-year").classList.remove("on-hover");
+      removeOnHover();
       validateForm();
     });
     yearOfBirth.appendChild(birthYear);
@@ -436,16 +430,12 @@ async function playback(pan, audioSrc) {
 }
 
 function updateTrackbar(trackbarValue) {
-  const markers = $all(".trackbar-marker");
-  Array.from(markers).forEach((marker) => {
+  [...$all(".track")].forEach((trackBar) => {
+    trackBar.style.backgroundImage = `linear-gradient(to right, #008545 calc((100% / 5) * ${trackbarValue} - 1.4rem), #333F48 0%)`;
+    const marker = trackBar.querySelector(".trackbar-marker");
     marker.setAttribute("value", trackbarValue);
     marker.style.left = `calc((100% / 5) * ${trackbarValue} - 1.5rem)`;
   });
-  const trackBars = $all(".track");
-  Array.from(trackBars).forEach(
-    (trackBar) =>
-      (trackBar.style.backgroundImage = `linear-gradient(to right, #008545 calc((100% / 5) * ${trackbarValue} - 1.4rem), #333F48 0%)`)
-  );
 }
 
 let resultIndex = 0;
@@ -507,22 +497,9 @@ function resetTestValues() {
 // CHECK FOR DESKTOP OR MOBILE
 
 function detectMobile() {
-  var result = navigator.userAgent.match(
-    /(iphone)|(ipod)|(ipad)|(android)|(blackberry)|(windows phone)|(symbian)/i
-  );
-
-  if (result !== null) {
-    return "mobile";
-  } else {
-    return "desktop";
-  }
-}
-
-function onMouseMove(event) {
-  if (detectMobile() == "desktop") {
-    return event.pageX;
-  }
-  return event.touches[0].pageX;
+  const mobilePattern =
+    /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|phone/i;
+  return mobilePattern.test(navigator.userAgent);
 }
 
 // STORE URL
@@ -598,7 +575,7 @@ const SLIDE_2 = `
                 <div class="dropdown-wrapper">
                     <div class="year-dropdown">
                         <span id="year-selected">Pick your birth year</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <svg class="drop-arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M2 7.5L12 17.5L22 7.5H2Z" fill="#008545" />
                         </svg>
                     </div>

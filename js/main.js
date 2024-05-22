@@ -250,6 +250,7 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
     event.preventDefault();
     setRestartTestModal();
     displayModal();
+    $('#continue-test').addEventListener('click', () => $('#dialog-close-btn').click());
   });
 
   initiateAndRunPlayback(4); // start playback at 45dB as soon as page has finish loading
@@ -278,6 +279,8 @@ async function setResultSlide() {
     event.preventDefault();
     setRestartTestModal();
     displayModal();
+    $('#continue-test').addEventListener('click', () => $('#dialog-close-btn').click());
+    
   });
 }
 
@@ -470,7 +473,11 @@ function changeSoundTrack(button) {
 
 function displayModal() {
   $("#dialog").showModal();
-  $("#dialog-close-btn").addEventListener("click", () => $("#dialog").close());
+  $("#dialog").style.display = "flex";
+  $("#dialog-close-btn").addEventListener("click", () => {
+    $("#dialog").close();
+    $("#dialog").style.display = "none";
+});
   $("#start-hearing-test").addEventListener("click", (event) => {
     if (!audio.paused) {
       audio.pause();
@@ -821,7 +828,7 @@ function setRestartTestModal() {
 </svg>
     Yes, restart hearing test
 </button>
-<button onclick=dialog.close() class="nav-button">
+<button id="continue-test" class="nav-button">
 No, continue with current test
 </button>
     </div>

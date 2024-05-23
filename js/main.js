@@ -6,12 +6,14 @@ const hearingTestContainer = $("#hearing-test-container");
 
 function getWelcomeSlide() {
   hearingTestContainer.innerHTML = SLIDE_1;
+  window.scrollTo(0, 0);
   $(".nav-button").addEventListener("click", (event) => navigate(event));
   resetTestValues();
 }
 
 function getFormSlide() {
   hearingTestContainer.innerHTML = SLIDE_2;
+  window.scrollTo(0, 0);
 
   const birthYear = $("#birth-year");
   const dropdownWrapper = birthYear.querySelector(".dropdown-wrapper");
@@ -83,6 +85,7 @@ let withHeadphones = false;
 
 async function getCalibrationSlide() {
   await getCalibrationSlideHTML();
+  window.scrollTo(0, 0);
   $all(".btn").forEach((button) =>
     button.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -130,7 +133,7 @@ async function getCalibrationSlide() {
 
 async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
   await getSoundTestSlideHTML(hearingTestType, earText, datadirection);
-
+  window.scrollTo(0, 0);
   $all(".soundtrack-button").forEach((button) =>
     button.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -272,6 +275,7 @@ async function setResultSlide() {
     text = hearingbudsMayHelpText;
   }
   await getResultSlide(title, text);
+  window.scrollTo(0, 0);
   $("#to-webshop").addEventListener("click", () => {
     window.location.href = STORE_URL;
   });

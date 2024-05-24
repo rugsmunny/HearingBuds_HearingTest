@@ -6,43 +6,104 @@ const hearingTestContainer = $("#hearing-test-container");
 
 function getWelcomeSlide() {
   hearingTestContainer.innerHTML = SLIDE_1;
-  window.scrollTo(0, 0);
   $(".nav-button").addEventListener("click", (event) => navigate(event));
   resetTestValues();
 }
 
 function getFormSlide() {
   hearingTestContainer.innerHTML = SLIDE_2;
-  window.scrollTo(0, 0);
 
-  const birthYear = $("#birth-year");
-  const dropdownWrapper = birthYear.querySelector(".dropdown-wrapper");
-  const birthYearDropdown = birthYear.querySelector(".year-dropdown");
-  const birthYearDropdownList = birthYear.querySelector(".dropdown-content");
+  const birthYearDropdownList =
+    $("#birth-year").querySelector(".dropdown-content");
+  const dropdownWrappers = $all(".dropdown-wrapper");
 
-  const addOnHover = () => {
+  const triggerMouseLeave = (wrapper) => {
+    const mouseLeaveEvent = new MouseEvent("mouseleave", {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    });
+    wrapper.dispatchEvent(mouseLeaveEvent);
+  };
+
+  const addOnHover = (event) => {
+    const dropdownWrapper = event.currentTarget;
     dropdownWrapper.classList.add("on-hover");
-    birthYear.querySelector(".drop-arrow").style.transform = "rotate(180deg)";
-    birthYearDropdown.removeEventListener("mouseenter", addOnHover);
+    dropdownWrapper.querySelector(".drop-arrow").style.transform =
+      "rotate(180deg)";
+    dropdownWrapper.removeEventListener("mouseenter", addOnHover);
     dropdownWrapper.addEventListener("mouseleave", removeOnHover);
   };
 
-  const removeOnHover = () => {
+  const removeOnHover = (event) => {
+    const dropdownWrapper = event.currentTarget;
     dropdownWrapper.classList.remove("on-hover");
-    birthYear.querySelector(".drop-arrow").style.transform = "rotate(0deg)";
+    dropdownWrapper.querySelector(".drop-arrow").style.transform =
+      "rotate(0deg)";
     dropdownWrapper.removeEventListener("mouseleave", removeOnHover);
-    birthYearDropdown.addEventListener("mouseenter", addOnHover);
+    dropdownWrapper.addEventListener("mouseenter", addOnHover);
   };
 
-  populateYearOfBirthDropdown(birthYearDropdownList, removeOnHover);
+  populateYearOfBirthDropdown(birthYearDropdownList);
+  [...dropdownWrappers].forEach((wrapper) => {
+    if (wrapper.querySelector("#gender-selected") != null) {
+      wrapper
+        .querySelector(".dropdown-content")
+        .childNodes.forEach((option) => {
+          option.addEventListener("click", (event) => {
+            validateForm(event);
+            const genderChoice = option.textContent || "";
+            $("#gender-selected").textContent = genderChoice;
+            switch (genderChoice.toLowerCase()) {
+              case "male":
+                gender[0].checked = true;
+                break;
+              case "female":
+                gender[1].checked = true;
+                break;
+              default:
+                gender[2].checked = true;
+                break;
+            }
 
-  birthYearDropdown.addEventListener("mouseenter", addOnHover);
+            triggerMouseLeave(wrapper);
+            USER_DATA.gender = genderChoice;
+          });
+        });
+    } else {
+      wrapper.querySelectorAll(".dropdown-content p").forEach((option) => {
+        option.addEventListener("click", (event) => {
+          validateForm(event);
+          const birthYear = option.textContent || "";
+          $("#year-selected").textContent = birthYear;
+          triggerMouseLeave(wrapper);
+          USER_DATA.yearOfBirth = birthYear;
+        });
+      });
+    }
+    wrapper.addEventListener("mouseenter", addOnHover);
+  });
 
-  const gender = $all(".input-radio");
-  gender.forEach((radioButton) =>
-    radioButton.addEventListener("click", (event) => {
+  const gender = $all(
+    ".input-radio",
+    "#gender-drop-option .dropdown-content p"
+  );
+  console.table(gender);
+  gender.forEach((option) =>
+    option.addEventListener("click", (event) => {
       validateForm(event);
-      USER_DATA.gender = radioButton.id || "";
+      let genderChoice = "";
+      if (event.currentTarget.type === "radio") {
+        genderChoice = option.id || "";
+        $("#gender-selected").textContent =
+          genderChoice == "no-answer" ? "Prefer not to answer" : genderChoice;
+      } else {
+        genderChoice = option.textContent || "";
+        console.log(genderChoice);
+
+        removeOnHover(event);
+      }
+      USER_DATA.gender = genderChoice;
     })
   );
 
@@ -85,7 +146,6 @@ let withHeadphones = false;
 
 async function getCalibrationSlide() {
   await getCalibrationSlideHTML();
-  window.scrollTo(0, 0);
   $all(".btn").forEach((button) =>
     button.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -133,7 +193,6 @@ async function getCalibrationSlide() {
 
 async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
   await getSoundTestSlideHTML(hearingTestType, earText, datadirection);
-  window.scrollTo(0, 0);
   $all(".soundtrack-button").forEach((button) =>
     button.addEventListener("click", async (event) => {
       event.preventDefault();
@@ -186,55 +245,66 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
   const trackMarkers = document.querySelectorAll(".trackbar-marker");
 
   trackMarkers.forEach((trackMarker) => {
-    trackMarker.addEventListener(detectMobile() ? "touchstart" : "mousedown", (event) => {
-      if(!detectMobile())event.preventDefault();
-      const trackBar = trackMarker.parentElement;
-      const trackRect = trackBar.getBoundingClientRect();
-      const trackWidth = trackRect.width;
-  
-      const mouseMoveHandler = (event) => {
-        let xPosition;
-        if (detectMobile()) {
-          if (event.touches && event.touches.length > 0) {
-            xPosition = event.touches[0].pageX;
+    trackMarker.addEventListener(
+      detectMobile() ? "touchstart" : "mousedown",
+      (event) => {
+        if (!detectMobile()) event.preventDefault();
+        const trackBar = trackMarker.parentElement;
+        const trackRect = trackBar.getBoundingClientRect();
+        const trackWidth = trackRect.width;
+
+        const mouseMoveHandler = (event) => {
+          let xPosition;
+          if (detectMobile()) {
+            if (event.touches && event.touches.length > 0) {
+              xPosition = event.touches[0].pageX;
+            } else {
+              return;
+            }
           } else {
-            return;
+            xPosition = event.pageX;
           }
-        } else {
-          xPosition = event.pageX;
-        }
-  
-        const newPosition = Math.min(
-          Math.max(xPosition - trackRect.left, -10),
-          trackWidth
+
+          const newPosition = Math.min(
+            Math.max(xPosition - trackRect.left, -10),
+            trackWidth
+          );
+          if (newPosition >= 0 && newPosition <= trackWidth) {
+            trackMarker.style.left = `${
+              newPosition - trackMarker.getBoundingClientRect().width / 2
+            }px`;
+            trackBar.style.backgroundImage = `linear-gradient(to right, #008545 ${newPosition}px, #333F48 ${newPosition}px)`;
+          }
+        };
+
+        const mouseUpHandler = () => {
+          const position = Math.round(
+            (trackMarker.getBoundingClientRect().left - trackRect.left) /
+              (trackWidth / 5)
+          );
+          updateTrackbar(position);
+          initiateAndRunPlayback(position);
+
+          document.removeEventListener("mousemove", mouseMoveHandler);
+          document.removeEventListener("mouseup", mouseUpHandler);
+          document.removeEventListener("touchmove", mouseMoveHandler);
+          document.removeEventListener("touchend", mouseUpHandler);
+        };
+
+        document.addEventListener(
+          detectMobile() ? "touchmove" : "mousemove",
+          mouseMoveHandler
         );
-        if (newPosition >= 0 && newPosition <= trackWidth) {
-          trackMarker.style.left = `${
-            newPosition - trackMarker.getBoundingClientRect().width / 2
-          }px`;
-          trackBar.style.backgroundImage = `linear-gradient(to right, #008545 ${newPosition}px, #333F48 ${newPosition}px)`;
-        }
-      };
-  
-      const mouseUpHandler = () => {
-        const position = Math.round(
-          (trackMarker.getBoundingClientRect().left - trackRect.left) /
-            (trackWidth / 5)
+        document.addEventListener(
+          detectMobile() ? "touchend" : "mouseup",
+          mouseUpHandler
         );
-        updateTrackbar(position);
-        initiateAndRunPlayback(position);
-  
-        document.removeEventListener("mousemove", mouseMoveHandler);
-        document.removeEventListener("mouseup", mouseUpHandler);
-        document.removeEventListener("touchmove", mouseMoveHandler);
-        document.removeEventListener("touchend", mouseUpHandler);
-      };
-  
-      document.addEventListener(detectMobile() ? "touchmove" : "mousemove", mouseMoveHandler);
-      document.addEventListener(detectMobile() ? "touchend" : "mouseup", mouseUpHandler);
-    });
+      }
+    );
+    window.addEventListener("resize", () =>
+      updateTrackbar(trackMarker.getAttribute("value"))
+    );
   });
-  
 
   function initiateAndRunPlayback(decibelValue) {
     decibel = decibelBValues[decibelValue];
@@ -242,18 +312,24 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
     playback(
       pan,
       `resources/sounds/Mono/Doro_${currentSound}_${decibel}dB_mono.mp3`
-    ).then(() => {
-      volumeButtons.forEach(
-        (button) => (button.querySelector("path").style.fill = "#008545")
-      );
-    }).catch((error) => {console.log(error.message)});
+    )
+      .then(() => {
+        volumeButtons.forEach(
+          (button) => (button.querySelector("path").style.fill = "#008545")
+        );
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
   }
 
   $("#restart").addEventListener("click", (event) => {
     event.preventDefault();
     setRestartTestModal();
     displayModal();
-    $('#continue-test').addEventListener('click', () => $('#dialog-close-btn').click());
+    $("#continue-test").addEventListener("click", () =>
+      $("#dialog-close-btn").click()
+    );
   });
 
   initiateAndRunPlayback(4); // start playback at 45dB as soon as page has finish loading
@@ -275,7 +351,6 @@ async function setResultSlide() {
     text = hearingbudsMayHelpText;
   }
   await getResultSlide(title, text);
-  window.scrollTo(0, 0);
   $("#to-webshop").addEventListener("click", () => {
     window.location.href = STORE_URL;
   });
@@ -283,8 +358,9 @@ async function setResultSlide() {
     event.preventDefault();
     setRestartTestModal();
     displayModal();
-    $('#continue-test').addEventListener('click', () => $('#dialog-close-btn').click());
-    
+    $("#continue-test").addEventListener("click", () =>
+      $("#dialog-close-btn").click()
+    );
   });
 }
 
@@ -311,9 +387,8 @@ const USER_DATA = {
 function validateForm() {
   const birthYearSelected =
     $("#year-selected").textContent.trim() !== "Pick your birth year";
-  const atLeastOneRadioChecked = Array.from($all(".gender")).some(
-    (radioButton) => radioButton.checked
-  );
+  const atLeastOneRadioChecked =
+    Array.from($all(".gender")).some((radioButton) => radioButton.checked);
   const atLeastOneCheckboxChecked = Array.from($all(".difficulties")).some(
     (checkbox) => checkbox.checked
   );
@@ -329,18 +404,12 @@ function validateForm() {
   }
 }
 
-function populateYearOfBirthDropdown(yearOfBirth, removeOnHover) {
+function populateYearOfBirthDropdown(yearOfBirth) {
   const currentYear = new Date().getFullYear();
   for (var year = currentYear; year >= currentYear - 120; year--) {
     const birthYear = document.createElement("p");
     birthYear.classList.add("text");
-    birthYear.style.textAlign = "end";
     birthYear.textContent = year;
-    birthYear.addEventListener("click", () => {
-      $("#year-selected").textContent = birthYear.textContent;
-      removeOnHover();
-      validateForm();
-    });
     yearOfBirth.appendChild(birthYear);
   }
 }
@@ -393,6 +462,7 @@ function changeSlide(slideToGet) {
   setTimeout(() => {
     actions[slideToGet]();
     hearingTestContainer.classList.remove("fade-out");
+    window.scrollTo(0, 0);
     hearingTestContainer.classList.add("fade-in");
   }, 600);
 }
@@ -438,10 +508,13 @@ async function playback(pan, audioSrc) {
 
 function updateTrackbar(trackbarValue) {
   [...$all(".track")].forEach((trackBar) => {
-    trackBar.style.backgroundImage = `linear-gradient(to right, #008545 calc((100% / 5) * ${trackbarValue} - 1.4rem), #333F48 0%)`;
     const marker = trackBar.querySelector(".trackbar-marker");
+    const markerWidth = marker.getBoundingClientRect().width;
+    trackBar.style.backgroundImage = `linear-gradient(to right, #008545 calc((100% / 5) * ${trackbarValue}), #333F48 0%)`;
+    marker.style.left = `calc((100% / 5) * ${trackbarValue} - ${
+      markerWidth / 2 / 16
+    }rem)`;
     marker.setAttribute("value", trackbarValue);
-    marker.style.left = `calc((100% / 5) * ${trackbarValue} - 1.5rem)`;
   });
 }
 
@@ -481,7 +554,7 @@ function displayModal() {
   $("#dialog-close-btn").addEventListener("click", () => {
     $("#dialog").close();
     $("#dialog").style.display = "none";
-});
+  });
   $("#start-hearing-test").addEventListener("click", (event) => {
     if (!audio.paused) {
       audio.pause();
@@ -536,7 +609,7 @@ const abortTestWarningText = `If you restart this test you will lose all your pr
 // HTML TEST TYPES
 
 function setEarTestTypeHtml(numOfEars, className, text) {
-  let htmlToReturn = `<span class="${className}">`;
+  let htmlToReturn = `<span class="${className}"><span>`;
   while (numOfEars > 0) {
     htmlToReturn += ` <svg width="48" height="48" viewBox="0 0 48 48" fill="none"
     xmlns="http://www.w3.org/2000/svg">
@@ -546,7 +619,7 @@ function setEarTestTypeHtml(numOfEars, className, text) {
     </svg>`;
     numOfEars--;
   }
-  return `${htmlToReturn}<br class="line-break"><p>${text}</p></span>`;
+  return `${htmlToReturn}</span>${text}</span>`;
 }
 
 // HTML TEMPLATES
@@ -581,6 +654,7 @@ const SLIDE_1 = `
 const SLIDE_2 = `
 <div id="user-info"> 
             <h1 class="title">First tell us a little <br class="line-break"> about yourself</h1>
+            <section class="part-1">
             <section id="birth-year">
                 <p>Please select your year of birth?</p>
                 <div class="dropdown-wrapper">
@@ -612,7 +686,25 @@ const SLIDE_2 = `
                         <label for="no-answer">Prefer not to answer</label>
                     </li>
                 </ul>
+
+                <div id="gender-drop-option" class="dropdown-wrapper">
+                    <div class="gender-dropdown">
+                        <span id="gender-selected">Pick your gender</span>
+                        <svg class="drop-arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M2 7.5L12 17.5L22 7.5H2Z" fill="#008545" />
+                        </svg>
+                    </div>
+                    <div class="dropdown-content">
+                    <p>Male</p>
+                    <p>Female</p>
+                    <p>Prefer not to answer</p>
+                    </div>
+                </div>
+
             </section>
+            </section>
+
+
 
         
 
@@ -775,7 +867,7 @@ async function getCalibrationSlideHTML() {
               </button>
 
               <div class="inner-headphone-container">
-                  <button id="without" class="nav-button btn" data-direction="3">Test without headphones</button>
+                  <button id="without" class="nav-button btn invert" data-direction="3">Test without headphones</button>
                   <button id="with" class="nav-button btn without-headphones" data-direction="3">Test with headphones</button>
               </div>
 
@@ -880,7 +972,7 @@ async function getSoundTestSlideHTML(hearingTestType, earText, datadirection) {
           <div class="indicator">
               <span class="track-span">
                   <div class="track">
-                      <svg width="566" height="16" viewBox="0 0 566 16" fill="none"
+                      <svg height="16" viewBox="0 0 566 16" fill="none"
                           xmlns="http://www.w3.org/2000/svg">
                           <path fill-rule="evenodd" clip-rule="evenodd"
                               d="M566 7.62503C566 11.7672 562.642 15.125 558.5 15.125L7.5 15.125C3.35786 15.125 -1.54005e-06 11.7671 -9.92116e-07 7.625C-4.44185e-07 3.48286 3.35787 0.125 7.5 0.125L558.5 0.125032C562.642 0.125033 566 3.4829 566 7.62503Z"
@@ -967,7 +1059,7 @@ async function getSoundTestSlideHTML(hearingTestType, earText, datadirection) {
                   </g>
               </svg>
               <div class="track">
-                  <svg width="566" height="16" viewBox="0 0 566 16" fill="none"
+                  <svg height="16" viewBox="0 0 566 16" fill="none"
                       xmlns="http://www.w3.org/2000/svg">
                       <path fill-rule="evenodd" clip-rule="evenodd"
                           d="M566 7.62503C566 11.7672 562.642 15.125 558.5 15.125L7.5 15.125C3.35786 15.125 -1.54005e-06 11.7671 -9.92116e-07 7.625C-4.44185e-07 3.48286 3.35787 0.125 7.5 0.125L558.5 0.125032C562.642 0.125033 566 3.4829 566 7.62503Z"
@@ -1049,9 +1141,11 @@ async function getSoundTestSlideHTML(hearingTestType, earText, datadirection) {
 async function getResultSlide(resultTitle, resultText) {
   hearingTestContainer.innerHTML = `
   <div id="result">
+<section class="result-header">
+<p class="text heading">Here are your results: </p>
+<h1 class="title">${resultTitle}</h1>
+</section>
 
-  <p class="text heading">Here are your results: </p>
-  <h1 class="title">${resultTitle}</h1>
 
 
 

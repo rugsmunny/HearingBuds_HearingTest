@@ -312,9 +312,7 @@
     height: 1.5rem;
     margin-top: 0.2rem;
   }
-  /* svg.transform {
-    transform: rotate(180deg);
-  } */
+  
 }
 
 .nav-button:has(svg) {
@@ -458,19 +456,12 @@ progress::-moz-progress-bar {
   font-weight: 400;
   line-height: 2.25rem;
   cursor: pointer;
-  .drop-arrow {
-    transform: rotate('0deg');
-  }
+
 }
 
-/* .dropdown:hover,
-[type="radio"] + label:hover,
-[type="checkbox"] + label:hover {
-  cursor: pointer;
-  .drop-arrow {
-    transform: rotate('180deg');
-  }
-} */
+.dropdown-wrapper.open .drop-arrow{
+    transform: rotate(180deg);
+}
 
 [type="radio"],
 [type="checkbox"] {
@@ -513,8 +504,6 @@ progress::-moz-progress-bar {
   flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
-  width: 100%;
-  height: max-content;
 }
 
 [type="radio"]:checked::before,
@@ -584,12 +573,13 @@ progress::-moz-progress-bar {
   visibility: hidden;
 }
 
-.text-field {
+.text-field.hidden {
   visibility: hidden;
+}
+
+.text-field {
   display: flex;
   width: min(31.5rem, 80vw);
-  height: 0;
-  margin-bottom: -1rem;
   flex-direction: row;
   align-items: center;
   border: 2px solid var(--border-border-primary, #333f48);
@@ -597,7 +587,6 @@ progress::-moz-progress-bar {
   padding-left: 1rem;
   input {
     flex: 1;
-    height: 100%;
     outline: none;
     border: none;
     color: var(--color-black);
@@ -646,27 +635,6 @@ progress::-moz-progress-bar {
   display: block;
   transition: 0.1s;
 }
-/* 
-.dropdown-content p:hover {
-  background: var(--color-brand);
-  color: var(--color-grey-white);
-  cursor: pointer;
-}
-
-.on-hover:hover .dropdown-content {
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  display: block;
-  max-height: calc(40px * 5);
-  border: 1px solid var(--color-brand);
-  z-index: 99;
-}
-
-.on-hover:hover .year-dropdown,
-.on-hover:hover .gender-dropdown {
-  border: 1px solid var(--color-brand);
-  z-index: 99;
-} */
 
 
 .dropdown-content p:hover {
@@ -940,13 +908,6 @@ progress::-moz-progress-bar {
 
   #gender-radio-option {
     flex-direction: column;
-  }
-  .textarea-hidden {
-    margin-bottom: -1rem;
-  }
-
-  #text-field {
-    width: 100%;
   }
 
   .width-large {

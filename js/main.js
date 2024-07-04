@@ -60,7 +60,6 @@ function getFormSlide() {
     ".input-radio",
     "#gender-drop-option .dropdown-content p"
   );
-  console.table(gender);
   gender.forEach((option) =>
     option.addEventListener("click", (event) => {
       validateForm(event);
@@ -83,6 +82,7 @@ function getFormSlide() {
     checkbox.addEventListener("click", () => {
       if (checkbox.id === "other") {
         $("#text-field").classList.toggle("hidden");
+        console.log('hidden toggled on #text-field');
       }
       validateForm();
     })

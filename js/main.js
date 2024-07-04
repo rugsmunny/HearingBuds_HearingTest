@@ -70,9 +70,6 @@ function getFormSlide() {
           genderChoice == "no-answer" ? "Prefer not to answer" : genderChoice;
       } else {
         genderChoice = option.textContent || "";
-        console.log(genderChoice);
-
-        removeOnHover(event);
       }
       USER_DATA.gender = genderChoice;
     })
@@ -82,7 +79,7 @@ function getFormSlide() {
     checkbox.addEventListener("click", () => {
       if (checkbox.id === "other") {
         $("#text-field").classList.toggle("hidden");
-        console.log('hidden toggled on #text-field');
+        
       }
       validateForm();
     })
@@ -290,9 +287,7 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
           (button) => (button.querySelector("path").style.fill = "#008545")
         );
       })
-      .catch((error) => {
-        console.log(error.message);
-      });
+      .catch((error) => {}); // maybe we should add some sort of info alert for user?
   }
 
   $("#restart").addEventListener("click", (event) => {

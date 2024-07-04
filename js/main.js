@@ -191,9 +191,6 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
       if (value > 5) value--;
       updateTrackbar(value);
       initiateAndRunPlayback(value);
-      volumeButtons.forEach(
-        (button) => (button.querySelector("path").style.fill = "#748C80")
-      );
     })
   );
   const trackBars = $all(".track");
@@ -205,9 +202,6 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
       const position = Math.round((mouseX - trackRect.left) / (trackWidth / 5));
       updateTrackbar(position);
       initiateAndRunPlayback(position);
-      volumeButtons.forEach(
-        (button) => (button.querySelector("path").style.fill = "#748C80")
-      );
     })
   );
 
@@ -281,13 +275,7 @@ async function getSoundTestSlide(hearingTestType, earText, datadirection, pan) {
     playback(
       pan,
       `resources/sounds/Mono/Doro_${currentSound}_${decibel}dB_mono.mp3`
-    )
-      .then(() => {
-        volumeButtons.forEach(
-          (button) => (button.querySelector("path").style.fill = "#008545")
-        );
-      })
-      .catch((error) => {}); // maybe we should add some sort of info alert for user?
+    ).catch((error) => {}); // maybe we should add some sort of info alert for user?
   }
 
   $("#restart").addEventListener("click", (event) => {
@@ -875,7 +863,7 @@ function setSoundTestDialogHTML(text, datadirection) {
 
 function setRestartTestModal() {
   hearingTestContainer.querySelector("#dialog").innerHTML = `
-  <span><p id="dialog-text" style="text-align: center;">${abortTestWarningText}</p>
+  <span data-title="restart"><p id="dialog-text" style="text-align: center;">${abortTestWarningText}</p>
     <a href="https://developer.mozilla.org/es/docs/Web/CSS/::backdrop" target="_blank"></a>
     <button id="dialog-close-btn" aria-label="close" class="x"><svg class="dialog-x" width="40" height="40"
             viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">

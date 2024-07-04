@@ -17,33 +17,6 @@ function getFormSlide() {
     $("#birth-year").querySelector(".dropdown-content");
   const dropdownWrappers = $all(".dropdown-wrapper");
 
-  const triggerMouseLeave = (wrapper) => {
-    const mouseLeaveEvent = new MouseEvent("mouseleave", {
-      view: window,
-      bubbles: true,
-      cancelable: true,
-    });
-    wrapper.dispatchEvent(mouseLeaveEvent);
-  };
-
-  const addOnHover = (event) => {
-    const dropdownWrapper = event.currentTarget;
-    dropdownWrapper.classList.add("on-hover");
-    dropdownWrapper.querySelector(".drop-arrow").style.transform =
-      "rotate(180deg)";
-    dropdownWrapper.removeEventListener("mouseenter", addOnHover);
-    dropdownWrapper.addEventListener("mouseleave", removeOnHover);
-  };
-
-  const removeOnHover = (event) => {
-    const dropdownWrapper = event.currentTarget;
-    dropdownWrapper.classList.remove("on-hover");
-    dropdownWrapper.querySelector(".drop-arrow").style.transform =
-      "rotate(0deg)";
-    dropdownWrapper.removeEventListener("mouseleave", removeOnHover);
-    dropdownWrapper.addEventListener("mouseenter", addOnHover);
-  };
-
   populateYearOfBirthDropdown(birthYearDropdownList);
   [...dropdownWrappers].forEach((wrapper) => {
     if (wrapper.querySelector("#gender-selected") != null) {
@@ -51,6 +24,7 @@ function getFormSlide() {
         .querySelector(".dropdown-content")
         .childNodes.forEach((option) => {
           option.addEventListener("click", (event) => {
+            event.stopPropagation();
             validateForm(event);
             const genderChoice = option.textContent || "";
             $("#gender-selected").textContent = genderChoice;
@@ -65,8 +39,7 @@ function getFormSlide() {
                 gender[2].checked = true;
                 break;
             }
-
-            triggerMouseLeave(wrapper);
+            wrapper.classList.toggle('open');
             USER_DATA.gender = genderChoice;
           });
         });
@@ -76,12 +49,11 @@ function getFormSlide() {
           validateForm(event);
           const birthYear = option.textContent || "";
           $("#year-selected").textContent = birthYear;
-          triggerMouseLeave(wrapper);
           USER_DATA.yearOfBirth = birthYear;
         });
       });
     }
-    wrapper.addEventListener("mouseenter", addOnHover);
+    wrapper.addEventListener("click", () => wrapper.classList.toggle('open'));
   });
 
   const gender = $all(
@@ -344,7 +316,7 @@ async function setResultSlide() {
     title = alarmingResultsTitle;
     text = alarmingResultsText;
   } else if (testResults.every((value) => value < 2)) {
-    title = hearingbudsGreatMusicAndCallsOption;
+    title = hearingbudsMayNotHelpTitle;
     text = hearingbudsMayNotHelpText;
   } else {
     title = hearingbudsMayHelpTitle;
@@ -590,19 +562,17 @@ function detectMobile() {
 const STORE_URL =
   "https://www.doro.com/sv-se/shop/smart-devices/hearingbuds/doro-hearingbuds/";
 // Texts
-
-
 const testDescription = `, each playing the same sound at a different frequency.<br><br>Adjust each slider to increase or decrease the volume level until you can barely hear the sound on that slider.`;
 const initialTestTextWithHeadphones =
   "For both left and right ear, there are 5 sliders";
 const initialTestTextWithoutHeadphones = "There are 5 sliders";
-const hearingbudsMayHelpTitle = "The HearingBuds may help you";
+const hearingbudsMayHelpTitle = "The HearingBuds may help";
 const hearingbudsMayHelpText =
-  "Your test results show that you have mild to moderate hearing loss in both ears across different frequencies, making the HearingBuds a great option for you.";
-const hearingbudsGreatMusicAndCallsOption =
-  "The HearingBuds will be a great option for your music and calls";
+  "Your test results show that you have mild to moderate hearing loss in both ears across different frequencies.";
+const hearingbudsMayNotHelpTitle =
+  "Your hearing sensitivity is within normal range across all frequencies tested.";
 const hearingbudsMayNotHelpText =
-  "Based on your online hearing test results, your hearing sensitivity is within normal range across all frequencies tested. However they're still great for making calls and enjoying great quality sound when you're listening to music.";
+  "Based on your online hearing test results, we recommend our HearingBuds for its excellent sound performance during calls and listening to music.";
 const alarmingResultsTitle =
   "Attention: You may want to seek professional help.";
 const alarmingResultsText = `Your test results show that you have severe hearing loss in both ears across different frequencies. We recommend you seek professional help.`;
@@ -632,8 +602,9 @@ const SLIDE_1 = `
             <h1 class="title">Doro HearingBuds <br class="line-break"> Hearing Test</h1>
             <section>
 
-                <p class="bread">Welcome to our Online <br class="line-break">Hearing Test!</p>
-                <p class="bread">Discover if the Doro HearingBuds could be beneficial for you</p>
+                <p class="bread">Welcome to our Online <br class="line-break">Hearing Test!</p><p class="bread">Discover
+                if the Doro
+                HearingBuds could be beneficial for you</p>
             </section>
             
             <button class="nav-button" data-direction="1">
@@ -646,7 +617,9 @@ const SLIDE_1 = `
 
         <footer class="disclaimer">
             <p>
-              DISCLAIMER: This test is not intended to diagnose hearing loss. It is only meant to provide an indicator to help determine if the Doro HearingBuds may be helpful for you. For a comprehensive assessment, please consult a specialist.
+                DISCLAIMER: This test is not intended to diagnose hearing loss. It is only meant to provide an indicator
+                to help determine if the Doro HearingBuds may be helpful for you. For a comprehensive assessment, please
+                consult a specialist.
             </p>
         </footer>`;
 
@@ -655,7 +628,7 @@ const SLIDE_2 = `
             <h1 class="title">First tell us a little <br class="line-break"> about yourself</h1>
             <section class="part-1">
             <section id="birth-year">
-                <p>Please select your year of birth</p>
+                <p>Please select your year of birth?</p>
                 <div class="dropdown-wrapper">
                     <div class="year-dropdown">
                         <span id="year-selected">Pick your birth year</span>
@@ -790,8 +763,8 @@ async function getCalibrationSlideHTML() {
                   
   
                   <p>
-                      We recommend you perform this entire test with headphones or some kind of headset on, 
-                      to get the most accurate results.
+                      We recommend you perform this entire test with headphones or some kind of headset on, to get the
+                      most accurate results.
                   </p>
               </div>
   
@@ -808,12 +781,15 @@ async function getCalibrationSlideHTML() {
                       <ol>
                           <li>
                               <p>
-                                  Remove your headphones and rub your hands together quickly and firmly in front of your nose to try to make the same sound.
+                                  Remove your headphones and rub your hands together quickly
+                                  and firmly in front of your nose to try to make the same
+                                  sound.
                               </p>
                           </li>
                           <li>
                               <p>
-                                  Adjust your volume so that the test sound file volume matches the sound of your own hands.
+                                  Adjust your volume so that the test sound file volume
+                                  matches the sound of your own hands.
                               </p>
                           </li>
                       </ol>
@@ -942,7 +918,8 @@ async function getSoundTestSlideHTML(hearingTestType, earText, datadirection) {
           <ol>
               <li>
                   <p>
-                      Move the slider to where you can barely hear the sound in your ${earText}, by dragging the green circle, or using the plus + and minus - buttons.
+                      Move the slider to where you can barely hear the sound in your ${earText}, by dragging
+                      the green circle, or using the plus + and minus - buttons.
                   </p>
               </li>
               <li>

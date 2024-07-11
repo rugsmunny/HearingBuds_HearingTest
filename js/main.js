@@ -18,6 +18,7 @@ function getFormSlide() {
   const dropdownWrappers = $all(".dropdown-wrapper");
 
   populateYearOfBirthDropdown(birthYearDropdownList);
+
   [...dropdownWrappers].forEach((wrapper) => {
     if (wrapper.querySelector("#gender-selected") != null) {
       wrapper
@@ -25,7 +26,6 @@ function getFormSlide() {
         .childNodes.forEach((option) => {
           option.addEventListener("click", (event) => {
             event.stopPropagation();
-            validateForm(event);
             const genderChoice = option.textContent || "";
             $("#gender-selected").textContent = genderChoice;
             switch (genderChoice.toLowerCase()) {
@@ -41,15 +41,16 @@ function getFormSlide() {
             }
             wrapper.classList.toggle('open');
             USER_DATA.gender = genderChoice;
+            validateForm();
           });
         });
     } else {
       wrapper.querySelectorAll(".dropdown-content p").forEach((option) => {
         option.addEventListener("click", (event) => {
-          validateForm(event);
           const birthYear = option.textContent || "";
           $("#year-selected").textContent = birthYear;
           USER_DATA.yearOfBirth = birthYear;
+          validateForm();
         });
       });
     }
@@ -62,7 +63,6 @@ function getFormSlide() {
   );
   gender.forEach((option) =>
     option.addEventListener("click", (event) => {
-      validateForm(event);
       let genderChoice = "";
       if (event.currentTarget.type === "radio") {
         genderChoice = option.id || "";
@@ -72,6 +72,7 @@ function getFormSlide() {
         genderChoice = option.textContent || "";
       }
       USER_DATA.gender = genderChoice;
+      validateForm();
     })
   );
 
@@ -84,6 +85,7 @@ function getFormSlide() {
       validateForm();
     })
   );
+
   $(".x-icon").addEventListener("click", () => {
     $("#tell-us-more-about-it").value = "";
   });
@@ -92,7 +94,6 @@ function getFormSlide() {
     if ($(".nav-button").classList.contains("inactive")) {
       return;
     }
-    USER_DATA.yearOfBirth = $("#year-selected").textContent;
 
     $all(".input-checkbox").forEach((checkbox) => {
       const key = checkbox.id.includes("-")
@@ -103,6 +104,7 @@ function getFormSlide() {
         USER_DATA.difficulties[key] = $("#tell-us-more-about-it").value;
       }
     });
+    
     navigate(event);
   });
 }
